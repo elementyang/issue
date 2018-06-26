@@ -1,0 +1,170 @@
+**********************************************************************************************************
+** first deploy five nodes k8s-cluster, the status is: **
+**********************************************************************************************************
+
+TASK [kubernetes-apps/persistent_volumes/openstack : Kubernetes Persistent Volumes | Add OpenStack Cinder Storage Class] *****************************************************************************************************************************************************
+Tuesday 26 June 2018  13:16:07 +0800 (0:00:00.045)       0:09:50.619 ********** 
+
+PLAY RECAP *******************************************************************************************************************************************************************************************************************************************************************
+localhost                  : ok=2    changed=0    unreachable=0    failed=0   
+node1                      : ok=340  changed=71   unreachable=0    failed=0   
+node2                      : ok=292  changed=62   unreachable=0    failed=0   
+node3                      : ok=292  changed=62   unreachable=0    failed=0   
+node4                      : ok=214  changed=35   unreachable=0    failed=0   
+node5                      : ok=214  changed=35   unreachable=0    failed=0   
+
+Tuesday 26 June 2018  13:16:07 +0800 (0:00:00.030)       0:09:50.650 ********** 
+=============================================================================== 
+kubernetes/preinstall : Update package management cache (YUM) -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 32.86s
+kubernetes/node : install | Copy kubelet from hyperkube container ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 32.23s
+kubernetes/master : Master | wait for the apiserver to be running ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 21.97s
+network_plugin/calico : Calico | Copy cni plugins from calico/cni container ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ 15.92s
+kubernetes/master : Copy kubectl from hyperkube container ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ 15.18s
+etcd : wait for etcd up ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 14.05s
+gather facts from all instances --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 8.07s
+kubernetes/preinstall : Install packages requirements ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 7.28s
+kubernetes/master : Compare host kubectl with hyperkube container ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 6.56s
+network_plugin/calico : Calico | Copy cni plugins from hyperkube ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ 6.27s
+kubernetes/master : Master | wait for kube-scheduler ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ 6.06s
+kubernetes-apps/ansible : Kubernetes Apps | Start Resources ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 5.42s
+kubernetes-apps/network_plugin/calico : Start Calico resources -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 5.18s
+kubernetes/secrets : Check_certs | Set 'sync_certs' to true on masters ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ 4.72s
+network_plugin/calico : Calico | Create calico manifests -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 4.32s
+download : Sync container --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 4.14s
+etcd : reload etcd ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 4.10s
+download : Download items --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 4.07s
+download : Download items --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 3.94s
+download : Sync container --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 3.73s
+[root@node1 kubespray]# 
+
+[root@node1 kubespray]# kubectl get node
+NAME      STATUS    ROLES                 AGE       VERSION
+node1     Ready     ingress,master,node   4m        v1.10.4
+node2     Ready     ingress,master,node   4m        v1.10.4
+node3     Ready     ingress,master,node   4m        v1.10.4
+node4     Ready     node                  4m        v1.10.4
+node5     Ready     node                  4m        v1.10.4
+[root@node1 kubespray]# 
+
+[root@node1 kubespray]# kubectl get pod --all-namespaces
+NAMESPACE     NAME                                    READY     STATUS    RESTARTS   AGE
+kube-system   calico-node-5jbg5                       1/1       Running   0          3m
+kube-system   calico-node-6ptnh                       1/1       Running   0          3m
+kube-system   calico-node-kq76j                       1/1       Running   0          3m
+kube-system   calico-node-mlqlc                       1/1       Running   0          3m
+kube-system   calico-node-w5lqd                       1/1       Running   0          3m
+kube-system   kube-apiserver-node1                    1/1       Running   0          3m
+kube-system   kube-apiserver-node2                    1/1       Running   0          3m
+kube-system   kube-apiserver-node3                    1/1       Running   0          3m
+kube-system   kube-controller-manager-node1           1/1       Running   0          4m
+kube-system   kube-controller-manager-node2           1/1       Running   0          4m
+kube-system   kube-controller-manager-node3           1/1       Running   0          4m
+kube-system   kube-dns-7bd4d5fbb6-67xtv               3/3       Running   0          2m
+kube-system   kube-dns-7bd4d5fbb6-rd97k               3/3       Running   0          2m
+kube-system   kube-proxy-node1                        1/1       Running   0          4m
+kube-system   kube-proxy-node2                        1/1       Running   0          4m
+kube-system   kube-proxy-node3                        1/1       Running   0          4m
+kube-system   kube-proxy-node4                        1/1       Running   0          4m
+kube-system   kube-proxy-node5                        1/1       Running   0          4m
+kube-system   kube-scheduler-node1                    1/1       Running   0          4m
+kube-system   kube-scheduler-node2                    1/1       Running   0          4m
+kube-system   kube-scheduler-node3                    1/1       Running   0          4m
+kube-system   kubedns-autoscaler-679b8b455-pdqp2      1/1       Running   0          2m
+kube-system   kubernetes-dashboard-55fdfd74b4-nptb4   1/1       Running   0          2m
+kube-system   nginx-proxy-node4                       1/1       Running   0          4m
+kube-system   nginx-proxy-node5                       1/1       Running   0          4m
+[root@node1 kubespray]# 
+
+[root@node1 kubespray]# ETCDCTL_CERT_FILE=/etc/ssl/etcd/ssl/admin-node1.pem ETCDCTL_KEY_FILE=/etc/ssl/etcd/ssl/admin-node1-key.pem etcdctl --endpoints=https://172.16.0.207:2379,https://172.16.0.208:2379,https://172.16.0.209:2379 member list
+1834a2fc8a7e6ca: name=etcd2 peerURLs=https://172.16.0.208:2380 clientURLs=https://172.16.0.208:2379 isLeader=true
+3bbae2fd02475d06: name=etcd3 peerURLs=https://172.16.0.209:2380 clientURLs=https://172.16.0.209:2379 isLeader=false
+eac761276025d4a2: name=etcd1 peerURLs=https://172.16.0.207:2380 clientURLs=https://172.16.0.207:2379 isLeader=false
+
+[root@node1 kubespray]# ETCDCTL_CERT_FILE=/etc/ssl/etcd/ssl/admin-node1.pem ETCDCTL_KEY_FILE=/etc/ssl/etcd/ssl/admin-node1-key.pem etcdctl --endpoints=https://172.16.0.207:2379,https://172.16.0.208:2379,https://172.16.0.209:2379 cluster-health
+member 1834a2fc8a7e6ca is healthy: got healthy result from https://172.16.0.208:2379
+member 3bbae2fd02475d06 is healthy: got healthy result from https://172.16.0.209:2379
+member eac761276025d4a2 is healthy: got healthy result from https://172.16.0.207:2379
+cluster is healthy
+[root@node1 kubespray]# 
+
+
+*********************************************************************************************************************************
+** After recover master, the status is: **
+*********************************************************************************************************************************
+
+PLAY RECAP *******************************************************************************************************************************************************************************************************************************************************************
+localhost                  : ok=2    changed=0    unreachable=0    failed=0   
+node1                      : ok=254  changed=35   unreachable=0    failed=0   
+node2                      : ok=202  changed=15   unreachable=0    failed=0   
+node4                      : ok=233  changed=43   unreachable=0    failed=0   
+node5                      : ok=163  changed=5    unreachable=0    failed=0   
+
+Tuesday 26 June 2018  16:54:25 +0800 (0:00:00.208)       0:07:50.731 ********** 
+=============================================================================== 
+kubernetes/preinstall : Update package management cache (YUM) -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 46.69s
+kubernetes/preinstall : Install packages requirements ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 35.46s
+kubernetes-recover/node : install | Compare host kubelet with hyperkube container ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ 24.67s
+kubernetes-recover/master : Master | wait for the apiserver to be running -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 21.25s
+network_plugin_recover/calico : Calico | Copy cni plugins from calico/cni container ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 12.11s
+kubernetes-recover/master : Compare host kubectl with hyperkube container -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 11.67s
+gather facts from all instances -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 11.58s
+network_plugin_recover/calico : Calico | Copy cni plugins from hyperkube ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 9.58s
+kubernetes-recover/master : Copy kubectl from hyperkube container ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 9.28s
+kubernetes-recover/master : Master | wait for kube-scheduler ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 6.10s
+kubernetes-recover/secrets : Check tokens | check if a cert already exists -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 5.41s
+network_plugin_recover/calico : Calico | Create calico manifests ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ 4.44s
+kubernetes-recover/master : Master | Remove apiserver container ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 4.41s
+download : Download items --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 3.92s
+kubernetes-recover/secrets : Check_certs | Set 'sync_certs' to true on masters ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 3.72s
+etcd-recover : Configure | Check if etcd cluster is healthy ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 3.09s
+download : Sync container --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 3.09s
+kubernetes-apps/network_plugin/calico : Start Calico resources -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 3.05s
+download : Sync container --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 2.85s
+download : Download items --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 2.76s
+[root@node1 kubespray]# 
+
+[root@node1 kubespray]# kubectl get node
+NAME      STATUS    ROLES                 AGE       VERSION
+node1     Ready     ingress,master,node   3h        v1.10.4
+node2     Ready     ingress,master,node   3h        v1.10.4
+node4     Ready     master,node           3h        v1.10.4
+node5     Ready     node                  3h        v1.10.4
+
+[root@node1 kubespray]# kubectl get pod -n kube-system -o wide
+NAME                                    READY     STATUS    RESTARTS   AGE       IP              NODE
+calico-node-5jbg5                       1/1       Running   0          3h        172.16.0.207    node1
+calico-node-kq76j                       1/1       Running   0          3h        172.16.0.211    node5
+calico-node-mlqlc                       1/1       Running   0          3h        172.16.0.208    node2
+calico-node-w5lqd                       1/1       Running   0          3h        172.16.0.210    node4
+kube-apiserver-node1                    1/1       Running   0          10m       172.16.0.207    node1
+kube-apiserver-node2                    1/1       Running   0          9m        172.16.0.208    node2
+kube-apiserver-node4                    1/1       Running   0          9m        172.16.0.210    node4
+kube-controller-manager-node1           1/1       Running   0          10m       172.16.0.207    node1
+kube-controller-manager-node2           1/1       Running   0          3h        172.16.0.208    node2
+kube-controller-manager-node4           1/1       Running   0          10m       172.16.0.210    node4
+kube-dns-7bd4d5fbb6-67xtv               3/3       Running   0          3h        10.233.97.129   node5
+kube-dns-7bd4d5fbb6-rd97k               3/3       Running   0          3h        10.233.74.66    node4
+kube-proxy-node1                        1/1       Running   0          3h        172.16.0.207    node1
+kube-proxy-node2                        1/1       Running   0          3h        172.16.0.208    node2
+kube-proxy-node4                        1/1       Running   0          3h        172.16.0.210    node4
+kube-proxy-node5                        1/1       Running   0          3h        172.16.0.211    node5
+kube-scheduler-node1                    1/1       Running   0          10m       172.16.0.207    node1
+kube-scheduler-node2                    1/1       Running   0          3h        172.16.0.208    node2
+kube-scheduler-node4                    1/1       Running   0          10m       172.16.0.210    node4
+kubedns-autoscaler-679b8b455-pdqp2      1/1       Running   0          3h        10.233.74.65    node4
+kubernetes-dashboard-55fdfd74b4-cm46l   1/1       Running   0          10m       10.233.75.1     node2
+nginx-proxy-node5                       1/1       Running   0          3h        172.16.0.211    node5
+
+[root@node1 kubespray]# ETCDCTL_CERT_FILE=/etc/ssl/etcd/ssl/admin-node1.pem ETCDCTL_KEY_FILE=/etc/ssl/etcd/ssl/admin-node1-key.pem etcdctl --endpoints=https://172.16.0.207:2379,https://172.16.0.208:2379,https://172.16.0.210:2379 cluster-health
+member 1834a2fc8a7e6ca is healthy: got healthy result from https://172.16.0.208:2379
+member d47982a2c5327fe7 is healthy: got healthy result from https://172.16.0.210:2379
+member eac761276025d4a2 is healthy: got healthy result from https://172.16.0.207:2379
+cluster is healthy
+
+[root@node1 kubespray]# ETCDCTL_CERT_FILE=/etc/ssl/etcd/ssl/admin-node1.pem ETCDCTL_KEY_FILE=/etc/ssl/etcd/ssl/admin-node1-key.pem etcdctl --endpoints=https://172.16.0.207:2379,https://172.16.0.208:2379,https://172.16.0.210:2379 member list
+1834a2fc8a7e6ca: name=etcd2 peerURLs=https://172.16.0.208:2380 clientURLs=https://172.16.0.208:2379 isLeader=true
+d47982a2c5327fe7: name=etcd4 peerURLs=https://172.16.0.210:2380 clientURLs=https://172.16.0.210:2379 isLeader=false
+eac761276025d4a2: name=etcd1 peerURLs=https://172.16.0.207:2380 clientURLs=https://172.16.0.207:2379 isLeader=false
+
+
+
