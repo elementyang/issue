@@ -1,0 +1,52 @@
+# kubespray change
+
+(1)add a new file: inventory/sample/hosts-recover-master.ini
+
+(2)add in README.md
+### recover-master
+    # Install dependencies from ``requirements.txt``, if there are not dependencies in the machine that will being running recover-master ansible.
+    sudo pip install -r requirements.txt
+
+    # Copy ``inventory/sample/group_vars`` as ``inventory/mycluster/group_vars``, if there is not copy in the machine that will being running recover-master ansible.
+    cp -rfp inventory/sample/group_vars inventory/mycluster/group_vars
+
+    # Copy ``inventory/sample/hosts-recover-master.ini`` as ``inventory/mycluster/hosts-recover-master.ini`` for recover master
+    cp inventory/sample/hosts-recover-master.ini inventory/mycluster/hosts-recover-master.ini
+
+    # Review and change context under ``inventory/mycluster/group_vars`` and ``inventory/mycluster/hosts-recover-master.ini``
+    cat inventory/mycluster/group_vars/all.yml
+    cat inventory/mycluster/group_vars/k8s-cluster.yml
+    cat inventory/mycluster/hosts-recover-master.ini
+
+    # Recover master with Ansible Playbook manully.
+    ansible-playbook -i inventory/mycluster/hosts-recover-master.ini recover-master.yml
+
+(3)add a new yml: recover-master.yml
+
+(4)add a new role: role/etcd-recover
+
+(5)add  roles/kubespray-defaults/default/main.yaml
+# add
+etcd_access_addresses_old: |-
+  {% for item in groups['etcd-old'] -%}
+    https://{{ hostvars[item]['access_ip'] | default(hostvars[item]['ip']) }}:2379{% if not loop.last %},{% endif %}
+  {%- endfor %}
+etcd_events_access_addresses_old: |-
+  {% for item in groups['etcd-old'] -%}
+    https://{{ hostvars[item]['access_ip'] | default(hostvars[item]['ip']) }}:2381{% if not loop.last %},{% endif %}
+  {%- endfor %}
+etcd_member_name_recover: |-
+  {% for host in groups['etcd'] %}
+  {%   if inventory_hostname == host %}{{ hostvars[host]['etcd_member_name'] }}{% endif %}
+  {% endfor %}
+etcd_peer_addresses_recover: |-
+  {% for item in groups['etcd'] -%}
+    {{ hostvars[item].etcd_member_name }}=https://{{ hostvars[item].access_ip | default(hostvars[item].ip | default(hostvars[item].ansible_default_ipv4['address'])) }}:2380{% if not loop.last %},{% endif %}
+  {%- endfor %}
+etcd_events_peer_addresses_recover: |-
+  {% for item in groups['etcd'] -%}
+    {{ hostvars[item].etcd_member_name }}-events=https://{{ hostvars[item].access_ip | default(hostvars[item].ip | default(hostvars[item].ansible_default_ipv4['address'])) }}:2382{% if not loop.last %},{% endif %}
+  {%- endfor %}
+
+(6)add a new role: kubernets-recover
+
